@@ -1,0 +1,299 @@
+<template>
+    <lightning-card title="Opportunities" icon-name="standard:opportunity">
+        <!-- Error display -->
+        <template if:true={error}>
+            <div class="slds-m-around_medium">
+                <lightning-layout>
+                    <lightning-layout-item>
+                        <div class="slds-text-color_error">{error}</div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </div>
+        </template>
+
+        <!-- Inline Edit Save/Cancel Bar -->
+        <template if:true={hasUnsavedChanges}>
+            <div class="slds-notify slds-notify_alert slds-alert_warning save-bar" role="alert">
+                <lightning-layout vertical-align="center">
+                    <lightning-layout-item flexibility="auto" padding="horizontal-small">
+                        <span class="slds-text-body_regular">
+                            {draftCount} unsaved {draftLabel} — review and save your edits.
+                        </span>
+                    </lightning-layout-item>
+                    <lightning-layout-item padding="horizontal-small">
+                        <lightning-button
+                            label="Cancel"
+                            variant="neutral"
+                            onclick={handleCancelEdit}
+                            class="slds-m-right_x-small"
+                        ></lightning-button>
+                        <lightning-button
+                            label="Save"
+                            variant="brand"
+                            onclick={handleSave}
+                        ></lightning-button>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </div>
+        </template>
+
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <div class="slds-is-relative spinner-container">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Data Table -->
+        <template if:false={isLoading}>
+            <div class="slds-scrollable_x table-container">
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col" class="checkbox-col">
+                                <lightning-input
+                                    type="checkbox"
+                                    label="Select All"
+                                    variant="label-hidden"
+                                    checked={allSelected}
+                                    onchange={handleSelectAll}
+                                ></lightning-input>
+                            </th>
+                            <template for:each={columns} for:item="col">
+                                <th
+                                    key={col.fieldName}
+                                    scope="col"
+                                    class="slds-is-sortable"
+                                    onclick={handleSort}
+                                    data-field={col.fieldName}
+                                >
+                                    <span class="slds-truncate" title={col.label}>
+                                        {col.label}
+                                    </span>
+                                    <template if:true={col.isSorted}>
+                                        <lightning-icon
+                                            icon-name={col.sortIcon}
+                                            size="xx-small"
+                                            alternative-text="Sort"
+                                            class="slds-m-left_xx-small sort-icon"
+                                        ></lightning-icon>
+                                    </template>
+                                </th>
+                            </template>
+                            <th scope="col" class="action-col">
+                                <span class="slds-truncate" title="Actions">Actions</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template if:true={hasRecords}>
+                            <template for:each={displayRecords} for:item="record">
+                                <tr key={record.Id} class={record.rowClass}>
+                                    <td class="checkbox-col">
+                                        <lightning-input
+                                            type="checkbox"
+                                            label="Select"
+                                            variant="label-hidden"
+                                            checked={record.isSelected}
+                                            data-id={record.Id}
+                                            onchange={handleRowSelect}
+                                        ></lightning-input>
+                                    </td>
+
+                                    <!-- Name -->
+                                    <td data-label="Name">
+                                        <template if:true={record.editingName}>
+                                            <lightning-input
+                                                type="text"
+                                                value={record.Name}
+                                                variant="label-hidden"
+                                                label="Name"
+                                                data-id={record.Id}
+                                                data-field="Name"
+                                                onchange={handleFieldChange}
+                                                class="inline-edit-input"
+                                            ></lightning-input>
+                                        </template>
+                                        <template if:false={record.editingName}>
+                                            <span class="slds-truncate" title={record.Name}
+                                                >{record.Name}</span
+                                            >
+                                        </template>
+                                    </td>
+
+                                    <!-- Stage with Flag -->
+                                    <td data-label="Stage">
+                                        <template if:true={record.editingStage}>
+                                            <lightning-combobox
+                                                value={record.StageName}
+                                                options={stageOptions}
+                                                variant="label-hidden"
+                                                label="Stage"
+                                                data-id={record.Id}
+                                                data-field="StageName"
+                                                onchange={handleFieldChange}
+                                                class="inline-edit-input"
+                                            ></lightning-combobox>
+                                        </template>
+                                        <template if:false={record.editingStage}>
+                                            <div class="slds-grid slds-grid_vertical-align-center">
+                                                <template if:true={record.isClosedWon}>
+                                                    <span
+                                                        class="flag flag-green slds-m-right_x-small"
+                                                        title="Closed Won"
+                                                    >
+                                                        <lightning-icon
+                                                            icon-name="utility:flag"
+                                                            size="x-small"
+                                                            variant="inverse"
+                                                            alternative-text="Closed Won"
+                                                        ></lightning-icon>
+                                                    </span>
+                                                </template>
+                                                <template if:true={record.isClosedLost}>
+                                                    <span
+                                                        class="flag flag-red slds-m-right_x-small"
+                                                        title="Closed Lost"
+                                                    >
+                                                        <lightning-icon
+                                                            icon-name="utility:flag"
+                                                            size="x-small"
+                                                            variant="inverse"
+                                                            alternative-text="Closed Lost"
+                                                        ></lightning-icon>
+                                                    </span>
+                                                </template>
+                                                <span class="slds-truncate" title={record.StageName}
+                                                    >{record.StageName}</span
+                                                >
+                                            </div>
+                                        </template>
+                                    </td>
+
+                                    <!-- Amount -->
+                                    <td data-label="Amount">
+                                        <template if:true={record.editingAmount}>
+                                            <lightning-input
+                                                type="number"
+                                                value={record.Amount}
+                                                variant="label-hidden"
+                                                label="Amount"
+                                                formatter="currency"
+                                                step="0.01"
+                                                data-id={record.Id}
+                                                data-field="Amount"
+                                                onchange={handleFieldChange}
+                                                class="inline-edit-input"
+                                            ></lightning-input>
+                                        </template>
+                                        <template if:false={record.editingAmount}>
+                                            <span class="slds-truncate" title={record.formattedAmount}
+                                                >{record.formattedAmount}</span
+                                            >
+                                        </template>
+                                    </td>
+
+                                    <!-- Close Date -->
+                                    <td data-label="Close Date">
+                                        <template if:true={record.editingCloseDate}>
+                                            <lightning-input
+                                                type="date"
+                                                value={record.CloseDate}
+                                                variant="label-hidden"
+                                                label="Close Date"
+                                                data-id={record.Id}
+                                                data-field="CloseDate"
+                                                onchange={handleFieldChange}
+                                                class="inline-edit-input"
+                                            ></lightning-input>
+                                        </template>
+                                        <template if:false={record.editingCloseDate}>
+                                            <span class="slds-truncate" title={record.CloseDate}
+                                                >{record.CloseDate}</span
+                                            >
+                                        </template>
+                                    </td>
+
+                                    <!-- Account Name -->
+                                    <td data-label="Account Name">
+                                        <span class="slds-truncate" title={record.AccountName}
+                                            >{record.AccountName}</span
+                                        >
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td class="action-col">
+                                        <lightning-button-icon
+                                            icon-name="utility:edit"
+                                            alternative-text="Edit"
+                                            variant="bare"
+                                            size="small"
+                                            data-id={record.Id}
+                                            onclick={handleEditRow}
+                                            title="Edit row"
+                                            class="edit-icon"
+                                        ></lightning-button-icon>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                        <template if:false={hasRecords}>
+                            <tr>
+                                <td colspan="7" class="slds-text-align_center slds-p-around_medium">
+                                    No opportunities found.
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="slds-p-around_medium pagination-container">
+                <lightning-layout vertical-align="center" multiple-rows>
+                    <lightning-layout-item size="12" medium-device-size="4" class="slds-p-bottom_small">
+                        <div class="slds-grid slds-grid_vertical-align-center">
+                            <span class="slds-m-right_small page-size-label">Rows per page:</span>
+                            <lightning-combobox
+                                value={pageSizeStr}
+                                options={pageSizeOptions}
+                                variant="label-hidden"
+                                label="Page Size"
+                                onchange={handlePageSizeChange}
+                                class="page-size-select"
+                            ></lightning-combobox>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" medium-device-size="4" class="slds-text-align_center slds-p-bottom_small">
+                        <span class="pagination-info">
+                            {recordRangeStart}-{recordRangeEnd} of {totalRecords}
+                        </span>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" medium-device-size="4" class="slds-p-bottom_small">
+                        <div class="slds-grid slds-grid_align-end slds-grid_vertical-align-center">
+                            <lightning-button-icon
+                                icon-name="utility:chevronleft"
+                                alternative-text="Previous"
+                                onclick={handlePrevious}
+                                disabled={isPrevDisabled}
+                                variant="bare"
+                                class="slds-m-right_x-small"
+                            ></lightning-button-icon>
+                            <span class="page-indicator">
+                                Page {pageNumber} of {totalPages}
+                            </span>
+                            <lightning-button-icon
+                                icon-name="utility:chevronright"
+                                alternative-text="Next"
+                                onclick={handleNext}
+                                disabled={isNextDisabled}
+                                variant="bare"
+                                class="slds-m-left_x-small"
+                            ></lightning-button-icon>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </div>
+        </template>
+    </lightning-card>
+</template>

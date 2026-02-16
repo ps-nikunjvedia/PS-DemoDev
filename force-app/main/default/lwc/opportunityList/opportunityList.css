@@ -1,0 +1,107 @@
+/* Flag indicators */
+.flag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+}
+
+.flag-green {
+    background-color: #2e844a;
+}
+
+.flag-red {
+    background-color: #c23934;
+}
+
+/* Table styling */
+.table-container {
+    min-height: 200px;
+}
+
+th.slds-is-sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+th.slds-is-sortable:hover {
+    background-color: #f3f3f3;
+}
+
+.sort-icon {
+    vertical-align: middle;
+}
+
+.checkbox-col {
+    width: 3.25rem;
+}
+
+.action-col {
+    width: 3.5rem;
+    text-align: center;
+}
+
+/* Edit icon */
+.edit-icon {
+    color: #706e6b;
+}
+
+.edit-icon:hover {
+    color: #0070d2;
+}
+
+/* Inline edit inputs */
+.inline-edit-input {
+    min-width: 120px;
+}
+
+/* Edited row indicator */
+.slds-is-edited {
+    background-color: #fffef3 !important;
+    box-shadow: inset 3px 0 0 #f9bc26;
+}
+
+/* Selected row */
+.slds-is-selected {
+    background-color: #eef4ff !important;
+}
+
+/* Save bar */
+.save-bar {
+    background-color: #fffef3;
+    border-bottom: 1px solid #f9bc26;
+    padding: 0.5rem 1rem;
+}
+
+/* Pagination */
+.pagination-container {
+    border-top: 1px solid #e5e5e5;
+}
+
+.page-size-label {
+    white-space: nowrap;
+    color: #706e6b;
+    font-size: 0.8125rem;
+}
+
+.page-size-select {
+    width: 5rem;
+}
+
+.pagination-info {
+    color: #706e6b;
+    font-size: 0.8125rem;
+}
+
+.page-indicator {
+    color: #706e6b;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+/* Spinner container */
+.spinner-container {
+    min-height: 200px;
+}
