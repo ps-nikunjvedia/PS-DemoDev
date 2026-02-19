@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>System Administrator Field Permissions</label>
+    <description>Grants Read and Edit access to Account Source and Primary Contact fields on the Account object.</description>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.AccountSource</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.Primary_Contact__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+</PermissionSet>

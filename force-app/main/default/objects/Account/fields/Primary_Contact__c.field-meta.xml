@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Primary_Contact__c</fullName>
+    <label>Primary Contact</label>
+    <type>Lookup</type>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>Accounts (Primary Contact)</relationshipLabel>
+    <relationshipName>Primary_Contact_Accounts</relationshipName>
+    <description>References the primary point of contact associated with this account.</description>
+    <externalId>false</externalId>
+    <required>false</required>
+</CustomField>
